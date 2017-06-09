@@ -1,8 +1,7 @@
-import capture from './lib/capturer'
-import serialize from './lib/serializer'
-
-const errorEndpoint = process.env.['ENDPOINT_ERROR']
-  , dataEndpoint = process.env.['ENDPOINT_DATA']
+const capture = require('./lib/capturer')
+  , serialize = require('./lib/serializer')
+  , errorEndpoint = process.env['ENDPOINT_ERROR']
+  , dataEndpoint = process.env['ENDPOINT_DATA']
 
 const sendError = (emitter, err) => {
   const remote = errorEndpoint.replace('%placeholder%', encodeURIComponent(err.message))
