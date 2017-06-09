@@ -1,28 +1,35 @@
 import capture from './lib/capturer'
 import serialize from './lib/serializer'
 
-const sendError = err => {
-  const remote = process.env.ENDPOINT_ERROR.replace('%data%', encodeURIComponent(err.message))
-  document.createElement('img').src = remote
+const errorEndpoint = process.env.['ENDPOINT_ERROR']
+  , dataEndpoint = process.env.['ENDPOINT_DATA']
+
+const sendError = (emitter, err) => {
+  const remote = errorEndpoint.replace('%placeholder%', encodeURIComponent(err.message))
+  emitter.document.createElement('img').src = remote
 }
 
-const sendCapturedData = err => {
+const sendCapturedData = (emitter, data) => {
   let serializedMessage
 
   try {
-    serializedMessage = serialize(err.message)
-  } catch (err) {
-    sendError(err)
+    serializedMessage = serialize(data)
+  } catch (error) {
+    sendError(emitter, error)
   }
 
-  const remote = process.env.ENDPOINT_DATA.replace('%data%', serializedMessage)
-  document.createElement('img').src = remote
+  const remote = dataEndpoint.replace('%placeholder%', serializedMessage)
+  emitter.document.createElement('img').src = remote
 }
 
-try {
-  capture(window, (error, result) =>
-    error ? sendError(err) : sendCapturedData(result)
-  )  
-} catch (err) {
-  sendError(err)
+module.exports = emitter => {
+  try {
+    capture(emitter, (error, result) =>
+      error
+        ? sendError(emitter, error)
+        : sendCapturedData(emitter, result)
+    )
+  } catch (error) {
+    sendError(emitter, error)
+  }
 }
